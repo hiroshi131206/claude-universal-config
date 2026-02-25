@@ -1,8 +1,14 @@
 # Claude Universal Config
 
+[![GitHub](https://img.shields.io/badge/GitHub-hiroshi131206%2Fclaude--universal--config-blue?logo=github)](https://github.com/hiroshi131206/claude-universal-config)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/hiroshi131206/claude-universal-config/pulls)
+
 **言語・フレームワーク横断的なClaude Code設定ライブラリ**
 
 プロジェクトごとに必要なルール、エージェント、コマンドを選択的に導入できる仕組みを提供します。
+
+🔗 **Repository**: https://github.com/hiroshi131206/claude-universal-config
 
 ## 📋 目次
 
@@ -71,7 +77,7 @@
 ### 1. リポジトリをクローン
 
 ```bash
-git clone https://github.com/YOUR_ORG/claude-universal-config.git
+git clone https://github.com/hiroshi131206/claude-universal-config.git
 cd claude-universal-config
 ```
 
@@ -406,5 +412,5 @@ MIT License
 
 ## サポート
 
-- Issues: https://github.com/YOUR_ORG/claude-universal-config/issues
-- Discussions: https://github.com/YOUR_ORG/claude-universal-config/discussions
+- Issues: https://github.com/hiroshi131206/claude-universal-config/issues
+- Discussions: https://github.com/hiroshi131206/claude-universal-config/discussions
