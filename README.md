@@ -19,6 +19,7 @@
 - [ディレクトリ構造](#ディレクトリ構造)
 - [設定ファイル](#設定ファイル)
 - [テンプレート](#テンプレート)
+- [MCPサーバー](#mcpサーバー)
 - [カスタマイズ](#カスタマイズ)
 - [コントリビューション](#コントリビューション)
 
@@ -32,6 +33,7 @@
 ✅ **設定ファイル駆動**: `claude-config.yaml` で簡単設定
 ✅ **テンプレート提供**: 一般的な構成をすぐに使える（Django+React, FastAPI+Vue, etc.）
 ✅ **拡張可能**: プロジェクト固有のカスタムルールを追加可能
+✅ **MCPサーバー対応**: `mcp:` セクションでセッション間通信などのMCPツールを組み込み可能
 
 ---
 
@@ -207,10 +209,12 @@ claude-universal-config/
 │   │   ├── code-reviewer.template.md
 │   │   ├── tdd-guide.template.md
 │   │   └── security-reviewer.template.md
-│   └── commands/
-│       ├── review.md
-│       ├── tdd.md
-│       └── test.md
+│   ├── commands/
+│   │   ├── review.md
+│   │   ├── tdd.md
+│   │   └── test.md
+│   └── mcp/
+│       └── claude-peers.md
 │
 ├── languages/                 # 言語別ルール（選択式）
 │   ├── python/
@@ -316,6 +320,13 @@ commands:
 custom_rules:
   - path: .claude/custom/area-permission-pattern.md
     description: "エリアスコープ権限パターン"
+
+# MCPサーバー（オプション）
+mcp:
+  claude-peers:
+    enabled: true
+    scope: user                        # user | project
+    install_path: ~/claude-peers-mcp   # インストール先パス
 ```
 
 ---
@@ -332,6 +343,72 @@ FastAPI + Vue のマイクロサービス構成
 
 #### `golang-microservices.yaml`（今後追加予定）
 Go のマイクロサービス構成
+
+---
+
+## MCPサーバー
+
+`mcp:` セクションで外部MCPツールをプロジェクト設定に組み込めます。`generate.py` 実行時に `.mcp.json` の生成またはユーザー登録コマンドの案内が自動的に行われます。
+
+### 対応MCPツール
+
+#### `claude-peers` — セッション間通信
+
+複数のClaude Codeセッション間でメッセージ送受信・コンテキスト共有を可能にします。
+
+**セキュリティ注意事項:**
+- ブローカーは `127.0.0.1` のみで動作（外部公開なし）
+- ブローカーに認証なし：信頼できるローカル環境での使用を推奨
+- `--dangerously-skip-permissions` は使用しないこと（なしでも動作する）
+- `OPENAI_API_KEY` 設定時はパス情報がOpenAIに送信される（オプション機能）
+
+**セットアップ:**
+
+```bash
+# 1. インストール
+git clone https://github.com/louislva/claude-peers-mcp.git ~/claude-peers-mcp
+cd ~/claude-peers-mcp && bun install
+
+# 2. scope: user の場合は手動登録（generate.py が案内を出力する）
+claude mcp add --scope user --transport stdio claude-peers -- bun ~/claude-peers-mcp/server.ts
+
+# 3. Claude Code 起動（--dangerously-skip-permissions は不要）
+claude --dangerously-load-development-channels server:claude-peers
+```
+
+**claude-config.yaml への記述例:**
+
+```yaml
+mcp:
+  claude-peers:
+    enabled: true
+    scope: user                        # user | project
+    install_path: ~/claude-peers-mcp   # インストール先パス
+```
+
+**scope の使い分け:**
+
+| scope | 動作 |
+|---|---|
+| `user` | `~/.claude/` にグローバル登録（全プロジェクトで利用可）。generate.py が登録コマンドを案内 |
+| `project` | プロジェクトルートの `.mcp.json` に自動出力 |
+
+詳細は [`core/mcp/claude-peers.md`](core/mcp/claude-peers.md) を参照。
+
+### 新しいMCPツールを追加
+
+```bash
+# 1. ドキュメントを追加
+echo "# my-tool MCP" > core/mcp/my-tool.md
+
+# 2. claude-config.yaml に追記
+# mcp:
+#   my-tool:
+#     enabled: true
+#     scope: project
+#     command: node
+#     args: [~/my-tool/index.js]
+```
 
 ---
 

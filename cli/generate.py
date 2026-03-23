@@ -30,6 +30,7 @@ class ClaudeConfigGenerator:
         self.frameworks_path = repo_path / "frameworks"
         self.infrastructure_path = repo_path / "infrastructure"
         self.domains_path = repo_path / "domains"
+        self.mcp_path = repo_path / "core" / "mcp"
 
     def generate(self, config_file: Path, output_dir: Path):
         """設定ファイルからClaude Code設定を生成"""
@@ -77,6 +78,9 @@ class ClaudeConfigGenerator:
 
         # 10. カスタムルール（オプション）
         self._copy_custom_rules(config, output_dir, output_claude)
+
+        # 11. MCPサーバー設定を生成（オプション）
+        self._generate_mcp(config, output_dir, output_claude)
 
         print(f"\n✅ Claude Code設定を生成しました: {output_claude}")
         print(f"\n次のステップ:")
@@ -253,6 +257,103 @@ class ClaudeConfigGenerator:
             json.dump(settings, f, indent=2, ensure_ascii=False)
 
         print(f"  ✓ settings.local.json")
+
+    def _generate_mcp(self, config: dict, project_root: Path, output: Path):
+        """MCPサーバー設定を生成
+
+        mcp セクションの各エントリに対して:
+          - scope: user  → ユーザー登録が必要な旨を案内するのみ（.mcp.json には出力しない）
+          - scope: project（デフォルト） → project_root/.mcp.json に追記
+        また core/mcp/<name>.md が存在すれば .claude/mcp/ にコピーする。
+        """
+        mcp_config = config.get("mcp", {})
+        if not mcp_config:
+            return
+
+        enabled_tools = {
+            name: cfg for name, cfg in mcp_config.items()
+            if cfg and cfg.get("enabled", False)
+        }
+        if not enabled_tools:
+            return
+
+        # .claude/mcp/ ドキュメントのコピー
+        mcp_doc_dst = output / "mcp"
+        mcp_doc_dst.mkdir(exist_ok=True)
+
+        project_scope_servers: dict = {}
+        user_scope_tools: list[str] = []
+
+        for name, cfg in enabled_tools.items():
+            # ドキュメントコピー
+            doc_src = self.mcp_path / f"{name}.md"
+            if doc_src.exists():
+                shutil.copy(doc_src, mcp_doc_dst / f"{name}.md")
+
+            scope = cfg.get("scope", "project")
+            if scope == "user":
+                user_scope_tools.append(name)
+                continue
+
+            # project スコープ: .mcp.json 用エントリを構築
+            server_entry = self._build_mcp_server_entry(name, cfg)
+            if server_entry:
+                project_scope_servers[name] = server_entry
+
+        # .mcp.json を生成（project スコープのみ）
+        if project_scope_servers:
+            mcp_json_path = project_root / ".mcp.json"
+            existing: dict = {}
+            if mcp_json_path.exists():
+                with open(mcp_json_path, encoding="utf-8") as f:
+                    try:
+                        existing = json.load(f)
+                    except json.JSONDecodeError:
+                        existing = {}
+            existing.update(project_scope_servers)
+            with open(mcp_json_path, "w", encoding="utf-8") as f:
+                json.dump(existing, f, indent=2, ensure_ascii=False)
+            print(f"  ✓ MCP (project): {', '.join(project_scope_servers.keys())} → .mcp.json")
+
+        # user スコープの手動登録案内
+        if user_scope_tools:
+            print(f"  ✓ MCP (user-scope): {', '.join(user_scope_tools)}")
+            for name in user_scope_tools:
+                cfg = enabled_tools[name]
+                install_path = cfg.get("install_path", f"~/{name}")
+                cmd = cfg.get("command", "bun")
+                entry_point = cfg.get("entry_point", "server.ts")
+                print(f"    → 手動登録が必要: claude mcp add --scope user --transport stdio "
+                      f"{name} -- {cmd} {install_path}/{entry_point}")
+
+    def _build_mcp_server_entry(self, name: str, cfg: dict) -> dict | None:
+        """MCPサーバーの .mcp.json エントリを構築"""
+        # 既知ツールのデフォルト設定
+        known_defaults: dict[str, dict] = {
+            "claude-peers": {
+                "command": "bun",
+                "args_template": "{install_path}/server.ts",
+                "default_install_path": "~/claude-peers-mcp",
+            },
+        }
+
+        if name in known_defaults:
+            defaults = known_defaults[name]
+            install_path = cfg.get("install_path", defaults["default_install_path"])
+            entry = defaults["args_template"].format(install_path=install_path)
+            return {
+                "command": cfg.get("command", defaults["command"]),
+                "args": [entry],
+            }
+
+        # 汎用: command / args を直接指定
+        if "command" in cfg:
+            return {
+                "command": cfg["command"],
+                "args": cfg.get("args", []),
+            }
+
+        return None
 
     def _copy_custom_rules(self, config: dict, project_root: Path, output: Path):
         """カスタムルールをコピー"""

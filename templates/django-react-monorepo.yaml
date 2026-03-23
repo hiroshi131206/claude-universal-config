@@ -47,3 +47,14 @@ commands:
   - migrate  # Django専用
   - debug
   - feature
+
+# MCPサーバー（オプション）
+# claude-peers: 複数のClaude Codeセッション間でメッセージ共有を行う
+# 事前に https://github.com/louislva/claude-peers-mcp をインストールし、
+# scope: user の場合は手動で登録が必要（generate.py が案内を出力する）
+#
+# mcp:
+#   claude-peers:
+#     enabled: true
+#     scope: user                        # user | project
+#     install_path: ~/claude-peers-mcp   # インストール先パス
