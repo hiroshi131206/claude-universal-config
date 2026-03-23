@@ -20,6 +20,7 @@
 - [設定ファイル](#設定ファイル)
 - [テンプレート](#テンプレート)
 - [MCPサーバー](#mcpサーバー)
+- [スキル・自律改善](#スキル自律改善)
 - [カスタマイズ](#カスタマイズ)
 - [コントリビューション](#コントリビューション)
 
@@ -34,6 +35,7 @@
 ✅ **テンプレート提供**: 一般的な構成をすぐに使える（Django+React, FastAPI+Vue, etc.）
 ✅ **拡張可能**: プロジェクト固有のカスタムルールを追加可能
 ✅ **MCPサーバー対応**: `mcp:` セクションでセッション間通信などのMCPツールを組み込み可能
+✅ **スキル・自律改善**: `skills:` セクションで autoresearch などの自律ループコマンドを導入可能
 
 ---
 
@@ -212,7 +214,19 @@ claude-universal-config/
 │   ├── commands/
 │   │   ├── review.md
 │   │   ├── tdd.md
-│   │   └── test.md
+│   │   ├── test.md
+│   │   ├── autoresearch.md          # 自律改善ループ（メインコマンド）
+│   │   └── autoresearch/            # サブコマンド群
+│   │       ├── debug.md, fix.md, learn.md
+│   │       ├── plan.md, predict.md, scenario.md
+│   │       ├── security.md, ship.md
+│   ├── skills/                      # コマンドが参照するプロトコルファイル
+│   │   └── autoresearch/
+│   │       ├── SKILL.md
+│   │       └── references/
+│   │           ├── autonomous-loop-protocol.md
+│   │           ├── results-logging.md
+│   │           └── (各ワークフロー参照ファイル)
 │   └── mcp/
 │       └── claude-peers.md
 │
@@ -315,6 +329,11 @@ commands:
   - migrate  # Django専用
   - debug
   - feature
+  - autoresearch  # 自律改善ループ（+サブコマンド autoresearch:debug/fix/security など）
+
+# スキル有効化（コマンドが参照するプロトコルファイル）
+skills:
+  - autoresearch
 
 # カスタムルール（オプション）
 custom_rules:
@@ -343,6 +362,85 @@ FastAPI + Vue のマイクロサービス構成
 
 #### `golang-microservices.yaml`（今後追加予定）
 Go のマイクロサービス構成
+
+---
+
+## スキル・自律改善
+
+`skills:` セクションでスキルファイル群（コマンドが内部参照するプロトコル）を `.claude/skills/` に展開します。
+
+### `autoresearch` — 自律改善ループ
+
+**概要:** 「修正 → 検証 → 採用/棄却 → 繰り返し」を自律的に実行するエージェントループ。測定可能な指標があれば何にでも適用可能。
+
+**実績例:** スキルファイルの品質チェック通過率 66.7% → 100%（5ラウンド自動実行）
+
+#### コマンド一覧
+
+| コマンド | 説明 |
+|---|---|
+| `/autoresearch` | メイン：任意の指標を改善する自律ループ |
+| `/autoresearch:debug` | バグ自動発見ループ（科学的仮説検証） |
+| `/autoresearch:fix` | エラーゼロになるまで自動修正 |
+| `/autoresearch:security` | STRIDE + OWASP Top10 自律セキュリティ監査 |
+| `/autoresearch:learn` | コードベースを自動解析してドキュメント生成 |
+| `/autoresearch:plan` | 目標からScope/Metric/Verifyを自動設計 |
+| `/autoresearch:predict` | 複数ペルソナによるスウォーム予測分析 |
+| `/autoresearch:scenario` | ユースケース・エッジケースを自動生成 |
+| `/autoresearch:ship` | コード・コンテンツなど何でも自動シッピング |
+
+#### 使い方
+
+```bash
+# 基本（unbounded: Ctrl+C で停止）
+/autoresearch
+Goal: テストカバレッジを70%から90%に改善
+Scope: src/**/*.ts
+Verify: npx jest --coverage 2>&1 | grep 'All files' | awk '{print $4}'
+
+# 回数制限あり（N回で自動停止）
+/autoresearch
+Goal: APIレスポンスタイムを200ms以下に
+Scope: src/api/**
+Verify: wrk -t2 -c10 -d5s http://localhost:3000/api 2>&1 | grep 'Avg Lat' | awk '{print $2}'
+Iterations: 10
+
+# セキュリティ監査
+/autoresearch:security --scope src/ --depth standard
+
+# バグ自動修正
+/autoresearch:fix --target "pytest" --scope src/
+```
+
+#### 動作の仕組み
+
+```
+Phase 0: git状態チェック（clean/dirty確認）
+Phase 1: git履歴を読み込み（前回の成功/失敗を学習）
+Phase 2: 次の実験を選択
+Phase 3: ファイルをアトミックに変更（1変更/1イテレーション）
+Phase 4: git commit（検証前にコミット → ロールバック可能）
+Phase 5: 検証コマンド実行 → 指標を抽出
+Phase 6: 改善なら KEEP / 悪化なら git revert
+Phase 7: results.tsv にログ記録
+Phase 8: Repeat（unboundedは無限、boundedはN回）
+```
+
+**セキュリティ設計:**
+- `git add -A` を**禁止**（明示的ファイル指定のみ）
+- `--no-verify` を**禁止**（フック経由で品質保護）
+- テスト・ガードファイルの変更**禁止**
+- `git revert` 優先（履歴として失敗も記録）
+
+#### claude-config.yaml への記述例
+
+```yaml
+commands:
+  - autoresearch
+
+skills:
+  - autoresearch
+```
 
 ---
 

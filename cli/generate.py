@@ -31,6 +31,7 @@ class ClaudeConfigGenerator:
         self.infrastructure_path = repo_path / "infrastructure"
         self.domains_path = repo_path / "domains"
         self.mcp_path = repo_path / "core" / "mcp"
+        self.skills_path = repo_path / "core" / "skills"
 
     def generate(self, config_file: Path, output_dir: Path):
         """設定ファイルからClaude Code設定を生成"""
@@ -70,16 +71,19 @@ class ClaudeConfigGenerator:
         # 7. エージェントを生成（テンプレート置換）
         self._generate_agents(config, output_claude)
 
-        # 8. コマンドをコピー
+        # 8. コマンドをコピー（サブディレクトリも含む）
         self._copy_commands(config, output_claude)
 
-        # 9. settings.local.json を生成
+        # 9. スキルをコピー（オプション）
+        self._copy_skills(config, output_claude)
+
+        # 10. settings.local.json を生成
         self._generate_settings(config, output_claude)
 
-        # 10. カスタムルール（オプション）
+        # 11. カスタムルール（オプション）
         self._copy_custom_rules(config, output_dir, output_claude)
 
-        # 11. MCPサーバー設定を生成（オプション）
+        # 12. MCPサーバー設定を生成（オプション）
         self._generate_mcp(config, output_dir, output_claude)
 
         print(f"\n✅ Claude Code設定を生成しました: {output_claude}")
@@ -218,11 +222,18 @@ class ClaudeConfigGenerator:
 
         count = 0
         for cmd in commands:
-            # コアコマンド
-            cmd_path = self.core_path / "commands" / f"{cmd}.md"
-            if cmd_path.exists():
-                shutil.copy(cmd_path, output / "commands" / f"{cmd}.md")
+            # コアコマンド（.md + サブディレクトリの両方をコピー）
+            cmd_md = self.core_path / "commands" / f"{cmd}.md"
+            cmd_dir = self.core_path / "commands" / cmd
+            if cmd_md.exists():
+                shutil.copy(cmd_md, output / "commands" / f"{cmd}.md")
                 count += 1
+                # サブコマンドディレクトリが存在すれば丸ごとコピー
+                if cmd_dir.is_dir():
+                    dst_dir = output / "commands" / cmd
+                    if dst_dir.exists():
+                        shutil.rmtree(dst_dir)
+                    shutil.copytree(cmd_dir, dst_dir)
                 continue
 
             # フレームワーク固有コマンド
@@ -243,6 +254,31 @@ class ClaudeConfigGenerator:
 
         if count > 0:
             print(f"  ✓ Commands: {count} files")
+
+    def _copy_skills(self, config: dict, output: Path):
+        """スキルをコピー（core/skills/<name>/ → .claude/skills/<name>/）"""
+        skills = config.get("skills", [])
+        if not skills:
+            return
+
+        dst_root = output / "skills"
+        dst_root.mkdir(exist_ok=True)
+        count = 0
+
+        for skill in skills:
+            skill_src = self.skills_path / skill
+            if not skill_src.is_dir():
+                print(f"  ⚠️  Skill '{skill}' not found (skipping)")
+                continue
+
+            dst = dst_root / skill
+            if dst.exists():
+                shutil.rmtree(dst)
+            shutil.copytree(skill_src, dst)
+            count += 1
+
+        if count > 0:
+            print(f"  ✓ Skills: {count} ({', '.join(skills[:count])})")
 
     def _generate_settings(self, config: dict, output: Path):
         """settings.local.json を生成"""

@@ -47,6 +47,11 @@ commands:
   - migrate  # Django専用
   - debug
   - feature
+  - autoresearch  # 自律改善ループ（autoresearch:debug/fix/security なども利用可）
+
+# スキル有効化（コマンドのリファレンスファイル群）
+skills:
+  - autoresearch  # autoresearch コマンド群が参照するプロトコルファイル
 
 # MCPサーバー（オプション）
 # claude-peers: 複数のClaude Codeセッション間でメッセージ共有を行う
