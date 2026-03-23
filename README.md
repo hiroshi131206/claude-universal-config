@@ -63,6 +63,7 @@
 - Vue
 - Angular
 - Svelte
+- SwiftUI（iOS 26+ / Swift 6.2）
 
 ### インフラ
 - Docker
@@ -373,11 +374,14 @@ mcp:
 #### `django-react-monorepo.yaml`
 Django + React のモノレポ構成
 
+#### `ios-swiftui.yaml`
+Swift 6.2 + SwiftUI + iOS 26 向け構成。swiftui-pro スキル（Paul Hudson 監修）付き。
+
+#### `remotion-product-demo.yaml`
+Remotion（React ベース動画生成）によるプロダクトデモ動画作成用構成。
+
 #### `fastapi-vue-microservices.yaml`（今後追加予定）
 FastAPI + Vue のマイクロサービス構成
-
-#### `golang-microservices.yaml`（今後追加予定）
-Go のマイクロサービス構成
 
 ---
 
@@ -505,6 +509,42 @@ commands:
 skills:
   - autoresearch
 ```
+
+---
+
+### `swiftui-pro` — 専門家レベルの SwiftUI レビュースキル
+
+[Paul Hudson](https://twitter.com/twostraws)（Hacking with Swift 作者）監修の SwiftUI レビュースキル。LLM が実際に犯しがちなミス（非推奨 API、VoiceOver 非対応、パフォーマンス劣化など）を的確に検出します。
+
+**カバー範囲（9 リファレンス）:**
+
+| リファレンス | 内容 |
+|---|---|
+| `api.md` | 非推奨 API の検出と現代的な代替 API への置換 |
+| `views.md` | View 構造・コンポジション・アニメーション |
+| `data.md` | `@Observable`・データフロー・プロパティラッパー |
+| `navigation.md` | `NavigationStack`・シート・アラート |
+| `design.md` | HIG 準拠・Dynamic Type・タップエリア |
+| `accessibility.md` | VoiceOver・Reduce Motion・Dynamic Type |
+| `performance.md` | 構造的同一性・`AnyView` 回避・遅延スタック |
+| `swift.md` | Swift 6.2 モダン構文・Swift Concurrency |
+| `hygiene.md` | コード品質・ローカライゼーション・テスト |
+
+**対応バージョン:** iOS 26+ / Swift 6.2 / SwiftUI
+
+#### 使い方
+
+```yaml
+# claude-config.yaml
+languages:
+  - swift
+frontend:
+  - swiftui
+skills:
+  - swiftui-pro
+```
+
+テンプレート `templates/ios-swiftui.yaml` を使えばすぐに始められます。
 
 ---
 

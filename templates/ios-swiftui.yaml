@@ -1,0 +1,41 @@
+# Claude Universal Config - iOS SwiftUI Template
+#
+# Swift 6.2 + SwiftUI + iOS 26 向けの設定。
+# swiftui-pro スキルにより、Paul Hudson 監修の専門家レベルの SwiftUI レビューが可能。
+
+name: ios-swiftui
+version: 1.0.0
+
+# 言語選択
+languages:
+  - swift
+
+# フロントエンドフレームワーク
+frontend:
+  - swiftui
+
+# エージェント有効化
+agents:
+  code-reviewer:
+    enabled: true
+    contexts: [swift, swiftui]
+    custom_checks:
+      - "Use @Observable + @MainActor instead of ObservableObject"
+      - "Use NavigationStack/NavigationSplitView, never NavigationView"
+      - "Use foregroundStyle() not foregroundColor()"
+      - "No force unwraps unless truly unrecoverable"
+  security-reviewer:
+    enabled: true
+    contexts: [swift]
+
+# コマンド有効化
+commands:
+  - review     # コードレビュー（swiftui-pro スキルと組み合わせて使用）
+  - debug      # デバッグ
+  - feature    # 機能追加
+
+# スキル有効化
+skills:
+  - swiftui-pro  # Paul Hudson 監修の専門家レベル SwiftUI レビュースキル
+                 # accessibility, api, data, design, hygiene, navigation,
+                 # performance, swift, views の 9 リファレンスを含む
