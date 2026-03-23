@@ -1,6 +1,6 @@
 ---
 name: black-hacker
-description: Red team agent that thinks like an attacker to find vulnerabilities before real attackers do. Use when reviewing code for security issues, auditing authentication/authorization logic, analyzing API endpoints, or before deploying any user-facing feature. Pairs with white-hacker agent for full red/blue team coverage.
+description: Red team agent that thinks like an attacker to find vulnerabilities before real attackers do. Use when reviewing specific code for security issues, auditing authentication/authorization logic, or analyzing API endpoints — produces a one-shot vulnerability report. For iterative autonomous security audits that loop until clean, use /autoresearch:security instead. Pairs with white-hacker agent for full red/blue team coverage.
 tools: Glob, Grep, Read, WebSearch
 model: opus
 color: red

@@ -1,6 +1,6 @@
 ---
 name: codex
-description: Delegates research-heavy or data-intensive tasks to OpenAI Codex CLI, then brings results back to Claude Code. Use when asked to "use codex", "ask codex", "codex でレビュー", "codex に相談", or when a task requires large-scale codebase analysis, deep research, or would hit Claude's web search rate limits. Codex handles the heavy lifting; Claude handles communication and synthesis.
+description: Delegates tasks to OpenAI Codex CLI when the user explicitly requests it. Use when asked to "use codex", "ask codex", "codex でレビュー", "codex に相談", or when web search rate limits are being hit and the user wants Codex to handle the data gathering. Do NOT use for general research or codebase analysis — those are handled by autoresearch. Codex handles explicit delegations; Claude handles communication and synthesis.
 license: MIT
 allowed-tools: Bash
 metadata:
