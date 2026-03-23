@@ -48,6 +48,7 @@ commands:
   - debug
   - feature
   - autoresearch  # 自律改善ループ（autoresearch:debug/fix/security なども利用可）
+  - encoding-fix  # Shift-JIS/EUC-JP/CP932 → UTF-8 変換（古い日本語サイト・ファイルの調査用）
 
 # スキル有効化（コマンドのリファレンスファイル群）
 skills:

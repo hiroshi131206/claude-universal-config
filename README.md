@@ -19,6 +19,7 @@
 - [ディレクトリ構造](#ディレクトリ構造)
 - [設定ファイル](#設定ファイル)
 - [テンプレート](#テンプレート)
+- [エンコーディング対応](#エンコーディング対応)
 - [MCPサーバー](#mcpサーバー)
 - [スキル・自律改善](#スキル自律改善)
 - [カスタマイズ](#カスタマイズ)
@@ -335,6 +336,9 @@ commands:
 skills:
   - autoresearch
 
+commands:
+  - encoding-fix  # Shift-JIS/EUC-JP/CP932 → UTF-8 変換
+
 # カスタムルール（オプション）
 custom_rules:
   - path: .claude/custom/area-permission-pattern.md
@@ -362,6 +366,54 @@ FastAPI + Vue のマイクロサービス構成
 
 #### `golang-microservices.yaml`（今後追加予定）
 Go のマイクロサービス構成
+
+---
+
+## エンコーディング対応
+
+Claude Code は Shift-JIS・EUC-JP・CP932 などの日本語エンコーディングを直接扱えない場合がある。
+`tools/encoding-convert.py` と `/encoding-fix` コマンドで変換してから読み込むことで、古い日本語サイトや社内レガシーファイルの調査が格段に楽になる。
+
+### `/encoding-fix` コマンド
+
+```bash
+# 古いWebサイトのページを取得して読む
+/encoding-fix https://old-company-site.co.jp/report.html
+
+# ローカルの Shift-JIS ファイルを変換
+/encoding-fix ./legacy-data/customers.csv --from-encoding cp932
+
+# ディレクトリ内の全HTMLを一括変換
+/encoding-fix ./scraped-pages/ --recursive
+
+# エンコーディングを確認するだけ（変換しない）
+/encoding-fix ./document.txt --detect-only
+```
+
+### `tools/encoding-convert.py` — 直接利用
+
+```bash
+# URLから取得して変換（出力先指定）
+python tools/encoding-convert.py https://example.com/page.html -o /tmp/page_utf8.html
+
+# ファイルを上書き変換
+python tools/encoding-convert.py ./report.html --from-encoding shift_jis
+
+# ディレクトリ一括変換（.html/.htm/.txt/.csv が対象）
+python tools/encoding-convert.py ./pages/ --recursive
+
+# chardet をインストールすると自動検出の精度が上がる（オプション）
+pip install chardet
+```
+
+### 対応エンコーディング
+
+| エンコーディング | 別名 | よく見る場面 |
+|---|---|---|
+| `shift_jis` | SJIS | 古い日本語Webサイト |
+| `cp932` | Windows-31J | Windowsで作ったテキスト・Excel CSV |
+| `euc_jp` | EUC-JP | 古いUnix/Linuxサーバー |
+| `iso2022_jp` | JIS | メール、一部の古いシステム |
 
 ---
 
