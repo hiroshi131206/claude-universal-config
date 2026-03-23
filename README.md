@@ -22,6 +22,7 @@
 - [エンコーディング対応](#エンコーディング対応)
 - [MCPサーバー](#mcpサーバー)
 - [スキル・自律改善](#スキル自律改善)
+- [プラグイン](#プラグイン)
 - [カスタマイズ](#カスタマイズ)
 - [コントリビューション](#コントリビューション)
 
@@ -265,8 +266,19 @@ claude-universal-config/
 │
 ├── templates/                 # プロジェクトテンプレート
 │   ├── django-react-monorepo.yaml
-│   ├── fastapi-vue-microservices.yaml
-│   └── golang-microservices.yaml
+│   ├── remotion-product-demo.yaml
+│   └── ...
+│
+├── plugins/                   # 追加インストール型プラグイン
+│   ├── hookify/               # カスタムフック作成システム（Python）
+│   │   ├── core/              # rule_engine.py, config_loader.py
+│   │   ├── hooks/             # pretooluse.py, posttooluse.py, stop.py, userpromptsubmit.py
+│   │   ├── commands/          # hookify.md, list.md, configure.md, help.md
+│   │   ├── agents/            # conversation-analyzer.md
+│   │   ├── skills/            # writing-rules/SKILL.md
+│   │   └── examples/          # サンプルルールファイル
+│   └── security-guidance/     # セキュリティパターン警告フック
+│       └── hooks/             # security_reminder_hook.py
 │
 └── cli/                       # CLIツール
     ├── generate.py
@@ -492,6 +504,85 @@ commands:
 
 skills:
   - autoresearch
+```
+
+---
+
+## プラグイン
+
+`plugins/` ディレクトリには、追加インストール型のプラグインが収録されています。generate.py によって自動展開されるのではなく、必要に応じて手動でプロジェクトの `.claude/` に導入します。
+
+### `hookify` — カスタムフック作成システム
+
+Markdown ルールファイル（`.claude/hookify.*.local.md`）から Claude Code フックを自動生成・管理するシステム。コード不要でフックを追加・無効化できます。
+
+**主な機能:**
+- PreToolUse / PostToolUse / Stop / UserPromptSubmit の全フックイベントをカバー
+- シンプルな `pattern:` またはマルチコンディション形式で記述
+- `action: warn`（通知のみ）または `action: block`（実行阻止）が選択可能
+- ルールは再起動不要で即時反映
+
+**インストール:**
+
+```bash
+# hooks.json を ~/.claude/settings.json の hooks に追記
+# hooks 内の ${CLAUDE_PLUGIN_ROOT} を plugins/hookify の絶対パスに置換
+```
+
+**使用コマンド:**
+
+| コマンド | 説明 |
+|---|---|
+| `/hookify` | 会話を分析してフックルールを自動生成 |
+| `/hookify:list` | 設定済みルール一覧を表示 |
+| `/hookify:configure` | ルールの有効・無効を切り替え |
+| `/hookify:help` | ヘルプを表示 |
+
+**ルール例:**
+
+```markdown
+---
+name: block-dangerous-rm
+enabled: true
+event: bash
+pattern: rm\s+-rf
+action: block
+---
+
+Dangerous rm command detected! Please verify the path before proceeding.
+```
+
+詳細: [`plugins/hookify/README.md`](plugins/hookify/README.md)
+
+---
+
+### `security-guidance` — セキュリティパターン警告フック
+
+ファイル編集時にセキュリティ上危険なパターンを検出して警告します。同一セッション内で同じ警告を重複表示しません（state ファイルで管理）。
+
+**検出パターン:**
+
+| パターン | 対象 |
+|---|---|
+| GitHub Actions workflow injection | `.github/workflows/*.yml` |
+| `eval()` / `new Function()` | JavaScript/TypeScript |
+| `dangerouslySetInnerHTML` / `.innerHTML =` | React / DOM |
+| `document.write` | JavaScript |
+| `pickle` | Python |
+| `os.system` | Python |
+| `child_process.exec` / `execSync` | Node.js |
+
+**インストール:**
+
+```bash
+# hooks.json を ~/.claude/settings.json の PreToolUse フックに追記
+# command の ${CLAUDE_PLUGIN_ROOT} を plugins/security-guidance の絶対パスに置換
+```
+
+**無効化:**
+
+```bash
+export ENABLE_SECURITY_REMINDER=0
 ```
 
 ---

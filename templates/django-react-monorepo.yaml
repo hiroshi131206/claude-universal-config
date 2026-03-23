@@ -38,17 +38,45 @@ agents:
   security-reviewer:
     enabled: true
     contexts: [web-security]
+  deep-explore:
+    enabled: true
+    contexts: [python, typescript, django, react]
+  code-architect:
+    enabled: true
+    contexts: [python, typescript, django, react]
+  code-explorer:
+    enabled: true
+    contexts: [python, typescript, django, react]
+  pr-test-analyzer:
+    enabled: true
+    contexts: [python, typescript]
+  comment-analyzer:
+    enabled: true
+    contexts: [python, typescript]
+  code-simplifier:
+    enabled: true
+    contexts: [python, typescript]
+  silent-failure-hunter:
+    enabled: true
+    contexts: [python, typescript]
+  type-design-analyzer:
+    enabled: true
+    contexts: [python, typescript]
 
 # コマンド有効化
 commands:
   - review
+  - review-pr      # PR レビュー（差分 + テスト + コメント分析）
   - tdd
   - test
-  - migrate  # Django専用
+  - migrate        # Django専用
   - debug
-  - feature
-  - autoresearch  # 自律改善ループ（autoresearch:debug/fix/security なども利用可）
-  - encoding-fix  # Shift-JIS/EUC-JP/CP932 → UTF-8 変換（古い日本語サイト・ファイルの調査用）
+  - feature        # 機能追加（シンプル）
+  - feature-dev    # 機能追加（7フェーズ: 設計→TDD→実装→レビュー）
+  - commit         # メッセージ自動生成コミット
+  - commit-push-pr # コミット + プッシュ + PR 作成
+  - autoresearch   # 自律改善ループ（autoresearch:debug/fix/security なども利用可）
+  - encoding-fix   # Shift-JIS/EUC-JP/CP932 → UTF-8 変換（古い日本語サイト・ファイルの調査用）
 
 # スキル有効化（コマンドのリファレンスファイル群）
 skills:
