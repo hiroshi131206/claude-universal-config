@@ -53,6 +53,7 @@ commands:
 # スキル有効化（コマンドのリファレンスファイル群）
 skills:
   - autoresearch  # autoresearch コマンド群が参照するプロトコルファイル
+  - grepai        # セマンティック検索スキル（Grep/Glob の代替。入力トークン最大-97%）
 
 # MCPサーバー（オプション）
 # claude-peers: 複数のClaude Codeセッション間でメッセージ共有を行う
@@ -64,3 +65,8 @@ skills:
 #     enabled: true
 #     scope: user                        # user | project
 #     install_path: ~/claude-peers-mcp   # インストール先パス
+#
+#   grepai:
+#     enabled: true
+#     scope: project                     # grepai mcp-serve を .mcp.json に出力
+#     # 事前に grepai init && grepai watch を実行しておくこと

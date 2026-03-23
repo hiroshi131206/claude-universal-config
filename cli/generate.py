@@ -371,11 +371,24 @@ class ClaudeConfigGenerator:
                 "args_template": "{install_path}/server.ts",
                 "default_install_path": "~/claude-peers-mcp",
             },
+            "grepai": {
+                # grepai はシステムにインストールされたバイナリを直接呼ぶ
+                # install_path 不要（PATH に grepai があれば動作）
+                "command": "grepai",
+                "args": ["mcp-serve"],
+            },
         }
 
         if name in known_defaults:
             defaults = known_defaults[name]
-            install_path = cfg.get("install_path", defaults["default_install_path"])
+            # args が直接定義されているツール（grepai など install_path 不要）
+            if "args" in defaults:
+                return {
+                    "command": cfg.get("command", defaults["command"]),
+                    "args": cfg.get("args", defaults["args"]),
+                }
+            # args_template ベースのツール（claude-peers など）
+            install_path = cfg.get("install_path", defaults.get("default_install_path", ""))
             entry = defaults["args_template"].format(install_path=install_path)
             return {
                 "command": cfg.get("command", defaults["command"]),
