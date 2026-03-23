@@ -1,0 +1,33 @@
+# Claude Universal Config - Remotion プロダクトデモテンプレート
+#
+# SNS リール・プロダクトデモ動画を Remotion で作成するための設定。
+# Claude Code がコンポーネントを生成し、タイミング調整 → エクスポートまでサポート。
+
+name: remotion-product-demo
+version: 1.0.0
+
+# 言語選択
+languages:
+  - typescript
+
+# フロントエンドフレームワーク
+frontend:
+  - react
+  - remotion
+
+# コマンド有効化
+commands:
+  - reel      # Remotion リール・デモ動画生成
+  - review    # コードレビュー
+  - debug     # デバッグ
+
+# エージェント有効化
+agents:
+  code-reviewer:
+    enabled: true
+    contexts: [typescript, react, remotion]
+    custom_checks:
+      - "アニメーションは useCurrentFrame + interpolate で宣言的に書いているか"
+      - "Math.random() をレンダリング中に使っていないか（毎フレーム値が変わる）"
+      - "FPS・デュレーションは constants.ts の定数を参照しているか"
+      - "シーンコンポーネントは props 化されて再利用可能か"
