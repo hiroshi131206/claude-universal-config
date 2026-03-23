@@ -40,6 +40,52 @@ Delete sections that don't apply. Add project-specific rules below.
 
 ---
 
+## Proactive Skill and Agent Selection
+
+Before starting any task, evaluate whether an available skill or agent applies.
+Do not wait for the user to specify — select and use the right tool automatically.
+
+### Skill Routing
+
+| Task type | Skill to use |
+|---|---|
+| SwiftUI / iOS code review or writing | `swiftui-pro` |
+| Web component, page, or UI code | `frontend-design` |
+| Image generation, sprites, transparent assets | `nano-banana` |
+| Find code by intent ("where is auth handled?") | `grepai` |
+| Autonomous iterative loop (modify → verify → repeat) | `autoresearch` |
+| User explicitly says "use Codex" or "ask Codex" | `codex` |
+| Creating or improving a Claude skill | `skill-creator` |
+
+### Agent Routing
+
+Invoke agents proactively using the Task tool when the task matches.
+Do not wait for the user to name the agent.
+
+| Task type | Agent to invoke |
+|---|---|
+| Security audit — one-shot vulnerability report | `black-hacker` → then `white-hacker` |
+| Security audit — iterative loop until clean | `/autoresearch:security` |
+| Design or plan a new feature's architecture | `code-architect` |
+| Explore an unfamiliar codebase | `code-explorer` |
+| Review a PR for test coverage and correctness | `pr-test-analyzer` |
+| Review PR comments or discussion | `comment-analyzer` |
+| Find and remove unnecessary complexity | `code-simplifier` |
+| Review error handling for silent failures | `silent-failure-hunter` |
+| Review type definitions and data model design | `type-design-analyzer` |
+
+### Decision Flow
+
+When a task arrives:
+1. Check: does it match a skill trigger above? → load that skill
+2. Check: does it match an agent trigger above? → invoke that agent via Task tool
+3. If multiple apply: use the most specific match (e.g. `swiftui-pro` beats `code-simplifier` for Swift code)
+4. If none apply: proceed with standard Claude Code behavior
+
+Do not announce this routing to the user unless asked. Just do it.
+
+---
+
 ## Task Management
 
 1. **Plan first**: Write the plan as a checklist in `tasks/todo.md` before coding.
